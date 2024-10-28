@@ -1,0 +1,403 @@
+//lcd library
+#include <LiquidCrystal.h>
+
+
+LiquidCrystal lcd(8, 3, 4, 5, 6, 7);
+
+
+//global variables
+int sensor = 12;
+//buttons
+int button1 = 52;
+int button2 = 50;
+int button3 = 48;
+int button4 = 46;
+
+
+//lights
+int bluelight = 53;
+int greenlight= 51;
+int redlight = 49;
+int yellowlight = 47;
+int whitelight = 10;
+
+
+//LED sequences, and player input arrays
+int pinlist1[] = {53,51,49,47};
+int playerinput1 [4];
+
+
+int pinlist2[] = {53,51,49,47,51};
+int playerinput2 [5];
+
+
+int pinlist3[] = {53,51,49,47,51,53};
+int playerinput3 [6];
+
+
+int pinlist4[] = {53,51,49,47,51,53,47};
+int playerinput4 [7];
+
+
+int pinlist5[] = {53,51,49,47,51,53,47,49};
+int playerinput5 [8];
+
+
+int pinlist6[] = {53,51,49,47,51,53,47,49,53};
+int playerinput6 [9];
+
+
+//variables of level and size of list
+int level = 1;
+int increment =4;
+
+
+//interupt variables
+const int buttonInterupt = 2;
+volatile int state = LOW;
+
+
+
+
+void setup() {
+//declaration of pinmode
+lcd.begin(16, 2);
+pinMode(sensor,INPUT);
+
+
+pinMode(button1, INPUT_PULLUP);  // Enable internal pull-up resistor
+pinMode(button2, INPUT_PULLUP);  // Enable internal pull-up resistor
+pinMode(button3, INPUT_PULLUP);  // Enable internal pull-up resistor
+pinMode(button4, INPUT_PULLUP);  // Enable internal pull-up resistor
+
+
+pinMode(bluelight, OUTPUT);
+pinMode(greenlight,OUTPUT);
+pinMode(redlight,OUTPUT);
+pinMode(yellowlight,OUTPUT);
+
+
+pinMode(whitelight,OUTPUT);
+
+
+
+
+Serial.begin(9600);
+
+
+//interrupt setup
+pinMode(buttonInterupt, INPUT_PULLUP);
+attachInterrupt(digitalPinToInterrupt(buttonInterupt), stateSwap, CHANGE);
+
+
+}
+
+
+void loop() {
+//hardware interupt feature
+ digitalWrite(whitelight,state);
+
+
+ lcd.clear();
+ lcd.setCursor(0, 0);
+ lcd.print("Wave hand over");
+ lcd.setCursor(0, 1);
+ lcd.print("sensor to start!");
+
+
+// checks if user swipes hand over PIR motion sensor
+if(digitalRead(sensor) == HIGH){
+//clears LCD display
+ lcd.clear();
+
+
+//checks if what level the user is on
+ if(level == 1 ){
+   //sets the lcd display to show level 1
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("Level 1:");
+// delays sequence for two seconds
+   delay(2000);
+// calls randomize list to generate a random sequence of pins
+   randomizeList(pinlist1,increment);
+//blinks the LEDs in the random array made my the previos function
+   blink(pinlist1, increment);
+//calls function to append user inputs to seperate array
+   playersturn(playerinput1, increment,level);
+//checks if the user inputed correct sequence that follow LEDS
+   if(levelCheck(pinlist1, playerinput1, increment)){ 
+//calls win function indicating player moves to next level
+     playerWin();
+   }else {
+//calls lost function that tells player to try again
+    playerLost();
+   
+   }
+ }
+   if(level == 2){
+   //sets the lcd display to show level 2
+
+
+     lcd.clear();
+     lcd.setCursor(0, 0);
+     lcd.print("Level 2:");
+    
+    delay(2000);
+    randomizeList(pinlist2,increment); //call randomize list which randomizes given list
+    blink(pinlist2, increment); // turns on and off each light in the array
+    playersturn(playerinput2, increment,level);
+
+
+   if(levelCheck(pinlist2, playerinput2, increment)){ //checks if each button is pressed
+    playerWin();
+   }else {
+    playerLost();
+   }
+ }
+
+
+ if(level == 3){
+   //sets the lcd display to show level 3
+
+
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("Level 3:");
+  
+   delay(2000);
+   randomizeList(pinlist3,increment); //call randomize list which randomizes given list
+   blink(pinlist3, increment); // turns on and off each light in the array
+   playersturn(playerinput3, increment,level);
+
+
+   if(levelCheck(pinlist3, playerinput3, increment)){ //checks if each button is pressed
+    playerWin();
+   }else {
+    playerLost();
+   }
+ }
+ if(level == 4){
+   //sets the lcd display to show level 4
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("Level 4:");
+
+
+   delay(2000);
+   randomizeList(pinlist4,increment); //call randomize list which randomizes given list
+   blink(pinlist4, increment); // turns on and off each light in the array
+   playersturn(playerinput4, increment,level);
+
+
+   if(levelCheck(pinlist4, playerinput4, increment)){ //checks if each button is pressed
+    playerWin();
+   }else {
+    playerLost();
+   }
+ }
+
+
+ if(level == 5){
+   //sets the lcd display to show level 5
+
+
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("Level 5:");
+
+
+   delay(2000);
+   randomizeList(pinlist5,increment); //call randomize list which randomizes given list
+   blink(pinlist5, increment); // turns on and off each light in the array
+   playersturn(playerinput5, increment,level);
+
+
+   if(levelCheck(pinlist5, playerinput5, increment)){ //checks if each button is pressed
+    playerWin();
+   }else {
+    playerLost();
+   }
+ }
+ if(level == 6){
+   //sets the lcd display to show level 6
+
+
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("Level 6:");
+
+
+   delay(2000);
+   randomizeList(pinlist6,increment); //call randomize list which randomizes given list
+   blink(pinlist6, increment); // turns on and off each light in the array
+   playersturn(playerinput6, increment,level);
+
+
+   if(levelCheck(pinlist6, playerinput6, increment)){ //checks if each button is pressed
+    finalWin();
+   }else {
+    playerLost();
+   }
+ }
+ }
+
+
+}
+//function toggles between two states, swaps the current value
+void stateSwap() {
+state = !state;
+}
+
+
+//function turns and off each led in array
+void blink(int blinkList[], int length) {
+ for (int i = 0; i < length; i++) { //traverses through lists
+   digitalWrite(blinkList[i], HIGH); //turns on led
+   delay(200);
+   digitalWrite(blinkList[i], LOW); //turns off led
+   delay(200);
+ }
+}
+
+
+//randomizes an array, shuffles the indexes
+void randomizeList(int list[], int length) {
+ for (int i = length - 1; i > 0; i--) {//traverses through list from largest to smallest
+   int j = random(0, i + 1);
+   // Swap arr[i] and arr[j]
+   int temp = list[i];
+   list[i] = list[j];
+   list[j] = temp;
+ }
+}
+
+
+//function checks if player's inputs are in the same sequence as the array
+bool levelCheck(int pinlist[], int playerlist[], int length) {
+ int count = 0; //creates local variable count
+ for (int i = 0; i < length; i++) {
+   if (pinlist[i] == playerlist[i]) {// checks each index
+     count++; //increments count each time
+   }
+ }
+   Serial.println("count: "); //check count value
+   Serial.println(count);
+   Serial.println("length:");
+   Serial.println(length); //check length value
+   return count == length;// returns boolean, true or false, whether count is equal to true
+ }
+
+
+//function creates an array filled with user inputs
+void playersturn(int playerinput[], int increment, int stage){
+ int marker; //local variables
+  for (int i = 0; i < increment; i++){
+     marker = 1;
+   while(marker == 1){
+     if(digitalRead(button1) == LOW){
+         playerinput[i] = 53; // first button pressed adds bluelight to the array
+         marker = 0; //resets marker to zero, so it continues to next index
+     }else if(digitalRead(button2) == LOW){
+         playerinput[i] = 51; // second button pressed adds greenlight to the array
+         marker = 0;
+     }else if(digitalRead(button3) == LOW){
+         playerinput[i] = 49; //third button pressed adds redlight to the array
+         marker = 0;
+     }else if(digitalRead(button4) == LOW){
+         playerinput[i] = 47; //fourth button pressed adds yellowlight to the array
+         marker = 0;
+       }
+   }
+     delay(200); //debounces forloop so it waits for user
+   }
+ }
+
+
+//function resets values back to level 1, tells user they lost
+void playerLost(){
+ level = 1; //reset to level one
+ increment = 4; //set size of list to 4
+
+
+//lcd is set to say try again
+ lcd.clear();
+ lcd.setCursor(0, 0);
+ lcd.print("Try Again!");
+
+
+//red light flashes, indicating to the user they lost
+ digitalWrite(redlight, HIGH);
+ delay(200);
+ digitalWrite(redlight, LOW);
+ delay(200);
+ digitalWrite(redlight, HIGH);
+ delay(200);
+ digitalWrite(redlight, LOW);
+ delay(2000);
+}
+
+
+//function increases level and size of list, tells user they passed level
+void playerWin(){
+ level++; //increases level by one
+ increment++; //increases size of list by one
+ //clears lcd display to say next level
+ lcd.clear();
+ lcd.setCursor(0, 0);
+ lcd.print("Next Level!");
+
+
+ //turns on all lights indicating to user they passed level
+ digitalWrite(bluelight,HIGH);
+ digitalWrite(greenlight,HIGH);
+ digitalWrite(redlight,HIGH);
+ digitalWrite(yellowlight,HIGH);
+ delay(2000);
+ digitalWrite(bluelight,LOW);
+ digitalWrite(greenlight,LOW);
+ digitalWrite(redlight,LOW);
+ digitalWrite(yellowlight,LOW);
+ delay(2000);
+}
+
+
+//function tells user they won the final level, resets all values
+void finalWin(){
+ level = 1; //sets level to one
+ increment = 4; //sets size of list to 4
+
+
+//clears the lcd screen and displays congrats, play again
+ lcd.clear();
+ lcd.setCursor(0, 0);
+ lcd.print("Congratulations!");
+ lcd.setCursor(0, 1);
+ lcd.print("Play Again!");
+
+
+//turns on and off all lights indicating they won
+ digitalWrite(bluelight,HIGH);
+ digitalWrite(greenlight,HIGH);
+ digitalWrite(redlight,HIGH);
+ digitalWrite(yellowlight,HIGH);
+ delay(2000);
+ digitalWrite(bluelight,LOW);
+ digitalWrite(greenlight,LOW);
+ digitalWrite(redlight,LOW);
+ digitalWrite(yellowlight,LOW);
+ delay(2000);
+}
+
+
+
+
+//i used this print out the values of arrays to serial monitor to check if my code was functioning properly
+void printArray(int array[], int size) {
+//  Serial.print("Array: ");
+ for (int i = 0; i < size; i++) {
+   Serial.print(array[i]);
+   Serial.print(" ");
+ }
+ Serial.println();  // Print a newline for better readability
+}
